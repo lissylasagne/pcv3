@@ -101,7 +101,6 @@ function A = designMatrixPart(in_x1, in_y1, in_z1, in_x2, in_y2)
 function p = normalizePoint(p_in)
   p = p_in / abs(p_in(1,3));
 
-#TODO: solution is Ap = 0, change dimensions of reshape
 function P_tilde = solveEquation(A)
   [U, S, V] = svd (A);
   S_min = min(diag(S));
@@ -113,20 +112,20 @@ function P_tilde = solveEquation(A)
   end
   
   #reshape the column of V
-  P_tilde = reshape(V(:, row), sqrt(rows(V)), sqrt(rows(V)));
+  P_tilde = reshape(V(:, row), 3, 4);
   
-function P = reverseConditioning(H_tilde, T1, T2)
+function P = reverseConditioning(P_tilde, T1, T2)
   P = inv(T2) * P_tilde * T1;
   
   
   
-
-
- 
+#TODO execise number 4: get K and R from P and get all the unknown parameters
 
  
+
  
-#K R AND P NOT NEEDED FOR NOW 
+ 
+#THESE FUNCTIONS NOT NEEDED FOR NOW 
 function K = calibrationMatrix(ax, ay, x0, y0, s) 
   K = [ ax  s x0;
         0  ay y0;
