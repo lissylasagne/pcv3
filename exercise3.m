@@ -1,11 +1,19 @@
 function exercise3()
   
   #using point from slide here
-  x1 = [44.7; -103.6; 47.4; -152.2; -153.3; -149.4];
-  y1 = [-142.4; -146.6; -150.1; 59.4; -96.9; 52.7];
-  z1 = [258.7; 154.4; 59.8; 245.2; 151.3; 46.9];
-  x2 = [18.5; 99.1; 13.8; 242.1; 151.1; 243.1];
-  y2 = [46.8; 146.5; 221.8; 52.5; 147.1; 224.5];
+  #x1 = [44.7; -103.6; 47.4; -152.2; -153.3; -149.4];
+  #y1 = [-142.4; -146.6; -150.1; 59.4; -96.9; 52.7];
+  #z1 = [258.7; 154.4; 59.8; 245.2; 151.3; 46.9];
+  #x2 = [18.5; 99.1; 13.8; 242.1; 151.1; 243.1];
+  #y2 = [46.8; 146.5; 221.8; 52.5; 147.1; 224.5];
+  
+  #exercise 3.3
+  x1 = [4; 12; 0;  0; 4; 12];
+  y1 = [4; 12; 4; 12; 0;  0];
+  z1 = [0;  0; 4; 12; 4; 12];
+  
+  x2 = [755; 1028; 557; 291; 665; 688];
+  y2 = [455; 297; 455; 305; 623; 967];
   
   T1 = coordinates4x4(x1, y1, z1)
   T2 = coordinates3x3(x2, y2)
@@ -17,6 +25,8 @@ function exercise3()
   #reverse conditioning
   P = reverseConditioning(P_tilde, T1, T2)
   
+  #exerceise 3.4
+  [C, R, K] = rqDecomposition(P)
   
 function T = coordinates3x3(in_x, in_y)
   #get mean of translation
@@ -117,36 +127,33 @@ function P_tilde = solveEquation(A)
 function P = reverseConditioning(P_tilde, T1, T2)
   P = inv(T2) * P_tilde * T1;
   
-  
-  
-#TODO execise number 4: get K and R from P and get all the unknown parameters
-
- 
-
- 
- 
-#THESE FUNCTIONS NOT NEEDED FOR NOW 
-function K = calibrationMatrix(ax, ay, x0, y0, s) 
-  K = [ ax  s x0;
-        0  ay y0;
-        0   0  1];
+function [C, R, K] = rqDecomposition(P)
+  M = [ P(1, 1:3);
+        P(2, 1:3);
+        P(3, 1:3)];
         
-function R = rotationMatrix(C, omega, phi, kappa)
-  Rz = [cos(kappa) -sin(kappa) 0;
-        sin(kappa)  cos(kappa) 0;
-        0           0          1];
-  Ry = [cos(phi) 0 sin(phi);
-        0        1 0;
-       -sin(phi) 0 cos(phi)];
-  Rx = [1 0           0;
-        0 cos(omega) -sin(omega);
-        0 sin(omega)  cos(omega)];
-  R = Rz * Ry * Rx;
+  m3 = [M(3, :)];
   
-function P = projectionMatrix(K, R)
-  I = [1 0 0 0;
-       0 1 0 0;
-       0 0 1 0;
-       0 0 0 1];
-  P = K * I * R;
-       
+  det = det(M);
+  if(det > 0)
+    delta = 1/norm(m3);
+  else
+    delta = -1/norm(m3);
+  endif
+  
+  [R, K] = qr (inv(M));
+  R = inv(R);
+  K = inv(K);
+  
+  #svd to find PC = 0
+  [S, V, D] = svd(M);
+  V_min = min(diag(V));
+  
+  for var = 1:rows(V)
+    if V(var,var) == V_min
+      row = var;
+    end
+  end     
+  
+  #reshape the column of D
+  C = reshape(D(:, row), 3, 1);
